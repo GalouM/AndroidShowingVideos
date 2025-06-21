@@ -46,11 +46,13 @@ android {
 
 dependencies {
 
+    //flipper
     debugImplementation(libs.flipper)
     debugImplementation(libs.flipper.soloader)
     releaseImplementation(libs.flipper.noop)
     debugImplementation(libs.flipper.network.plugin)
 
+    // androidx
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -61,15 +63,24 @@ dependencies {
     implementation(libs.androidx.material3)
 
 
+    // API call
     implementation(libs.moshi)
     ksp(libs.moshi.ksp)
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.moshi)
 
+    // hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
 
+    // exo player
+    implementation(libs.media3.ui)
+    implementation(libs.media3.exoplayer)
+    implementation(libs.media3.exoplayer.dash)
+    implementation(libs.media3.ui.compose)
 
+
+    //test
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

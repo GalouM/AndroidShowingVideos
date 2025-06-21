@@ -1,7 +1,6 @@
 package com.example.showingvideos.feature.videolist
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -16,9 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.showingvideos.feature.videolist.screen.PixelDisclaimer
 import com.example.showingvideos.feature.videolist.screen.SearchBar
@@ -31,12 +28,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        viewModel.onEvent(VideoListEvent.SetQuery("cats"))
         setContent {
             val uriHandler = LocalUriHandler.current
             ShowingVideosTheme {
                 val state by viewModel.displayState.collectAsStateWithLifecycle()
-                Log.e("GAELLE", "state = $state")
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize()
