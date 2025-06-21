@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">ShowingVideos</string>
+    <string name="search_hint">Search…"</string>
+    <string name="search_content_description">Search button</string>
 </resources>
