@@ -2,4 +2,6 @@
     <string name="app_name">ShowingVideos</string>
     <string name="search_hint">Search…"</string>
     <string name="search_content_description">Search button</string>
+    <string name="pexel_disclaimer">Powered by the good people at %s</string>
+    <string translatable="false" name="pexel_website">Pixels.com</string>
 </resources>
