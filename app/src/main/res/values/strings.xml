@@ -3,7 +3,7 @@
     <string name="search_hint">Search…"</string>
     <string name="search_content_description">Search button</string>
     <string name="pexel_disclaimer">Powered by the good people at %s</string>
-    <string translatable="false" name="pexel_website">Pixels.com</string>
+    <string translatable="false" name="pexel_website">Pexels.com</string>
     <string name="video_image_placeholder_description">Image placehoder</string>
     <string name="speaker_icon_description">Mute/Unmute video</string>
     <string name="default_error_message">Something went wrong</string>"

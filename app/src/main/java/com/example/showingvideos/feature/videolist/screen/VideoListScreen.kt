@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,8 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.showingvideos.library.uicommon.fakeVideoUiList
-import com.example.showingvideos.library.uicommon.reachedBottom
 import com.example.showingvideos.library.uicommon.firstVisibleItem
+import com.example.showingvideos.library.uicommon.reachedBottom
 import com.example.showingvideos.library.uimodels.SoundState
 import com.example.showingvideos.library.uimodels.VideoUi
 import com.example.showingvideos.ui.theme.ShowingVideosTheme
@@ -80,23 +79,25 @@ internal fun VideoListScreen(
             contentPadding = contentPadding,
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-
-            itemsIndexed(
-                items = videos,
-                key = { _, video -> video.id.value }
-            ) { index, video ->
-                VideoItemView(
-                    video = video,
-                    shouldPlay = index == itemPlayingIndex,
-                    soundState = soundState,
-                    onMuteClicked = { currentSoundState ->
-                        soundState = when (currentSoundState) {
-                            SoundState.MUTED -> SoundState.UNMUTED
-                            SoundState.UNMUTED -> SoundState.MUTED
+            items(
+                count = videos.size,
+                key = { index ->
+                    videos.getOrNull(index)?.id?.value ?: "unknown_$index"
+                }
+            ) { index ->
+                videos.getOrNull(index)?.let { video ->
+                    VideoItemView(
+                        video = video,
+                        shouldPlay = index == itemPlayingIndex,
+                        soundState = soundState,
+                        onMuteClicked = { currentSoundState ->
+                            soundState = when (currentSoundState) {
+                                SoundState.MUTED -> SoundState.UNMUTED
+                                SoundState.UNMUTED -> SoundState.MUTED
+                            }
                         }
-
-                    }
-                )
+                    )
+                }
             }
 
             if (isLoadingMore) {
