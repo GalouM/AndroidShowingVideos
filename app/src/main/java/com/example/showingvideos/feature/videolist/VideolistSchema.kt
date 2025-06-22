@@ -6,6 +6,8 @@ sealed interface VideoListDisplayState {
     data object Loading : VideoListDisplayState
     data class Success(val videos: List<Video>) : VideoListDisplayState
     data class Error(val isRetryable: Boolean, val errorMessage: String? = null) : VideoListDisplayState
+    data object NextPageFailed : VideoListDisplayState
+    data object Empty : VideoListDisplayState
 }
 
 sealed interface VideoListEvent {

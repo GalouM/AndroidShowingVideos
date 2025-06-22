@@ -9,16 +9,24 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.showingvideos.R
+import com.example.showingvideos.feature.videolist.screen.EmptyState
+import com.example.showingvideos.library.uicommon.ErrorScreen
+import com.example.showingvideos.library.uicommon.ErrorSnackBar
+import com.example.showingvideos.library.uicommon.LoadingScreen
 import com.example.showingvideos.feature.videolist.screen.PixelDisclaimer
 import com.example.showingvideos.feature.videolist.screen.SearchBar
+import com.example.showingvideos.feature.videolist.screen.VideoListScreen
 import com.example.showingvideos.ui.theme.ShowingVideosTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -30,13 +38,23 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val uriHandler = LocalUriHandler.current
-            ShowingVideosTheme {
-                val state by viewModel.displayState.collectAsStateWithLifecycle()
+            //val context = LocalContext.current
+            //val player = ExoPlayer.Builder(context).build()
 
+            val snackbarHostState = remember { SnackbarHostState() }
+
+            val state by viewModel.displayState.collectAsStateWithLifecycle()
+            val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+            val isLoadingMore by viewModel.isLoadingMore.collectAsStateWithLifecycle()
+
+            ShowingVideosTheme {
                 Scaffold(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    snackbarHost = { SnackbarHost(snackbarHostState) }
                 ) { innerPadding ->
-                    Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+                    Column(modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)) {
                         SearchBar(
                             onSearchClicked = { query ->
                                 viewModel.onEvent(VideoListEvent.SetQuery(query))
@@ -49,12 +67,34 @@ class MainActivity : ComponentActivity() {
                                 .align(Alignment.CenterHorizontally)
                         )
 
-                        Button(onClick = { viewModel.onEvent(VideoListEvent.Refresh) }) {
-                            Text(text = "refresh")
-                        }
+                        when (val currentState = state) {
+                            is VideoListDisplayState.Error -> {
+                                ErrorScreen(
+                                    showRetryButton = currentState.isRetryable,
+                                    onRetryClicked = { viewModel.onEvent(VideoListEvent.Refresh) }
+                                )
+                            }
+                            VideoListDisplayState.Loading -> LoadingScreen()
+                            is VideoListDisplayState.Success -> {
+                                if (currentState.videos.isNotEmpty()) {
+                                    VideoListScreen(
+                                        videos = currentState.videos,
+                                        onRefresh = { viewModel.onEvent(VideoListEvent.Refresh) },
+                                        onLoadMore = { viewModel.onEvent(VideoListEvent.LoadNextPage) },
+                                        isRefreshing = isRefreshing,
+                                        isLoadingMore = isLoadingMore,
+                                    )
+                                } else {
+                                    EmptyState(message = stringResource(R.string.no_results))
+                                }
+                            }
+                            is VideoListDisplayState.NextPageFailed ->
+                                ErrorSnackBar(
+                                    message = stringResource(R.string.default_error_message),
+                                    snackbarHostState = snackbarHostState
+                                )
 
-                        Button(onClick = { viewModel.onEvent(VideoListEvent.LoadNextPage) }) {
-                            Text(text = "next page")
+                            VideoListDisplayState.Empty -> EmptyState()
                         }
                     }
                 }

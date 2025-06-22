@@ -12,10 +12,11 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.showingvideos.R
 
 @Composable
-fun PixelDisclaimer(onLinkClicked: (String) -> Unit, modifier: Modifier = Modifier) {
+internal fun PixelDisclaimer(onLinkClicked: (String) -> Unit, modifier: Modifier = Modifier) {
     val disclaimerFormat = stringResource(R.string.pexel_disclaimer)
     val linkText = stringResource(R.string.pexel_website)
     val annotatedString = buildAnnotatedString {
@@ -38,6 +39,12 @@ fun PixelDisclaimer(onLinkClicked: (String) -> Unit, modifier: Modifier = Modifi
         style = MaterialTheme.typography.bodySmall,
         fontStyle = FontStyle.Italic
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PixelDisclaimerPreview() {
+    PixelDisclaimer({})
 }
 
 const val PEXELS_WEBSITE = "http://pexels.com"

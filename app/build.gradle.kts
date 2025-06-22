@@ -79,6 +79,9 @@ dependencies {
     implementation(libs.media3.exoplayer.dash)
     implementation(libs.media3.ui.compose)
 
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network)
+
 
     //test
     testImplementation(libs.junit)

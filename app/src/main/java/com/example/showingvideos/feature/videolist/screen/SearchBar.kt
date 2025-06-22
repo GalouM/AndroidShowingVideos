@@ -24,7 +24,7 @@ import com.example.showingvideos.R
 import com.example.showingvideos.ui.theme.ShowingVideosTheme
 
 @Composable
-fun SearchBar(
+internal fun SearchBar(
     onSearchClicked: (query: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -55,7 +55,7 @@ fun SearchBar(
 
 @Preview(showBackground = true)
 @Composable
-fun SearchBarPreview() {
+private fun SearchBarPreview() {
     ShowingVideosTheme { // Assuming you have a theme defined
         SearchBar(onSearchClicked = { query ->
             // In a real app, you'd do something with the query here

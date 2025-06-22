@@ -11,7 +11,7 @@ interface VideoListRemoteSource {
     suspend fun getVideoList(
         @Query("query") query: String,
         @Query("per_page") limit: Int,
-        @Query("page") page: Int
+        @Query("page") page: Int,
     ): VideoListApi
 
 }

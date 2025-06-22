@@ -42,9 +42,6 @@ class FetchVideoNetworkModule {
         return OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
             .addNetworkInterceptor(FlipperOkhttpInterceptor(networkFlipperPlugin))
-            .connectTimeout(300, TimeUnit.SECONDS)
-            .readTimeout(300, TimeUnit.SECONDS)
-            .writeTimeout(300, TimeUnit.SECONDS)
             .build()
     }
 
