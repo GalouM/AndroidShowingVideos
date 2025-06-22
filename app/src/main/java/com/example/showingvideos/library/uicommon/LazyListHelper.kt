@@ -13,14 +13,14 @@ fun LazyListState.firstVisibleItem(minimumVisiblePercentage: Float = MINIMUM_VIS
     val visibleItemsInfo = layoutInfo.visibleItemsInfo
     return when (visibleItemsInfo.size) {
         0 -> -1
-        1 -> visibleItemsInfo.first().index
+        1 -> visibleItemsInfo.firstOrNull()?.index ?:-1
         else -> {
-            val firstItem = visibleItemsInfo.first()
-            val firstItemVisiblePercentage = firstItem.calculateVisiblePercentage(layoutInfo)
+            val firstItem = visibleItemsInfo.firstOrNull()
+            val firstItemVisiblePercentage = firstItem?.calculateVisiblePercentage(layoutInfo) ?: 0f
             if (firstItemVisiblePercentage > minimumVisiblePercentage) {
-                firstItem.index
+                firstItem?.index ?: 0
             } else {
-                visibleItemsInfo[1].index
+                visibleItemsInfo.getOrNull(1)?.index ?: -1
             }
         }
     }

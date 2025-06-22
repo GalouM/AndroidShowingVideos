@@ -2,8 +2,6 @@ package com.example.showingvideos.feature.videolist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.showingvideos.library.uimodels.SoundState
-import com.example.showingvideos.library.uimodels.VideoUi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -24,8 +22,6 @@ internal class VideoListViewModel @Inject constructor(
     val isRefreshing: StateFlow<Boolean> = _isRefreshing
     val isLoadingMore: StateFlow<Boolean> = _isLoadingMore
 
-    private val videos: MutableList<VideoUi> = mutableListOf()
-
     val displayState: StateFlow<VideoListDisplayState> =
         fetchVideoListUseCase.state.map { state ->
             _isRefreshing.value = false
@@ -33,8 +29,10 @@ internal class VideoListViewModel @Inject constructor(
             when (state) {
                 is FetchVideoListUseCase.FetchVideoState.Success -> {
                     canLoadMore = state.canLoadMore
-                    videos += state.videos
-                    VideoListDisplayState.Success(videos)
+                    VideoListDisplayState.Success(
+                        videos = state.videos,
+                        resetListView = state.resultReset
+                    )
                 }
                 is FetchVideoListUseCase.FetchVideoState.Error -> {
                     if (state.isFirstPage) {

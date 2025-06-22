@@ -22,6 +22,8 @@ internal class FetchVideoListUseCase @Inject constructor(
     private val repository: FetchVideoRepository,
     private val videoMapper: VideoMapper
 ) {
+
+    private val videos = mutableListOf<VideoUi>()
     private var lastRequest: FetchVideoRequest? = null
         set(value) {
             field = value
@@ -58,12 +60,16 @@ internal class FetchVideoListUseCase @Inject constructor(
     private suspend fun fetchVideoList(page: Int, query: String): FetchVideoState =
         when (val result = repository.getVideoList(query, PAGE_SIZE, page)) {
             is FetchVideoRepository.FetchVideoList.Success -> {
+                val resetResults = page == STARTING_PAGE
                 val pageAlreadyFetched = checkIfPageAlreadyFetched(result.videos)
                 lastVideoFetchedId = result.videos.lastOrNull()?.id
                 val originalVideos = result.videos.takeUnless { pageAlreadyFetched } ?: emptyList()
+                if (resetResults && !pageAlreadyFetched) videos.clear()
+                videos += videoMapper.map(originalVideos)
                 FetchVideoState.Success(
-                    videos = videoMapper.map(originalVideos),
-                    canLoadMore = canLoadMore(result.videos, pageAlreadyFetched)
+                    videos = videos,
+                    canLoadMore = canLoadMore(result.videos, pageAlreadyFetched),
+                    resultReset = resetResults
                 )
             }
 
@@ -94,7 +100,11 @@ internal class FetchVideoListUseCase @Inject constructor(
     }
 
     sealed interface FetchVideoState {
-        data class Success(val videos: List<VideoUi>, val canLoadMore: Boolean) : FetchVideoState
+        data class Success(
+            val videos: List<VideoUi>,
+            val canLoadMore: Boolean,
+            val resultReset: Boolean
+        ) : FetchVideoState
         data class Error(val isFirstPage: Boolean) : FetchVideoState
         data class RetryableError(val isFirstPage: Boolean) : FetchVideoState
     }

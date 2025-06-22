@@ -39,11 +39,18 @@ internal fun VideoListScreen(
     onLoadMore: () -> Unit,
     isRefreshing: Boolean,
     isLoadingMore: Boolean,
+    resetListView: Boolean,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
     val lazyListState = rememberLazyListState()
+
+    LaunchedEffect(resetListView) {
+        if (resetListView && videos.isNotEmpty()) {
+            lazyListState.scrollToItem(0)
+        }
+    }
 
     val reachedBottom: Boolean by remember {
         derivedStateOf { lazyListState.reachedBottom(buffer = 3) }
@@ -57,7 +64,7 @@ internal fun VideoListScreen(
         }
     }
 
-    val centeredItemIndex by remember {
+    val itemPlayingIndex by remember {
         derivedStateOf { lazyListState.firstVisibleItem() }
     }
 
@@ -73,13 +80,14 @@ internal fun VideoListScreen(
             contentPadding = contentPadding,
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+
             itemsIndexed(
                 items = videos,
                 key = { _, video -> video.id.value }
             ) { index, video ->
                 VideoItemView(
                     video = video,
-                    shouldPlay = index == centeredItemIndex,
+                    shouldPlay = index == itemPlayingIndex,
                     soundState = soundState,
                     onMuteClicked = { currentSoundState ->
                         soundState = when (currentSoundState) {
@@ -116,7 +124,8 @@ private fun VideoListScreenPreviewWithFakeData() {
             onRefresh = {},
             onLoadMore = {},
             isRefreshing = false,
-            isLoadingMore = false
+            isLoadingMore = false,
+            resetListView = false,
         )
     }
 }

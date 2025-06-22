@@ -83,6 +83,7 @@ class MainActivity : ComponentActivity() {
                                         onLoadMore = { viewModel.onEvent(VideoListEvent.LoadNextPage) },
                                         isRefreshing = isRefreshing,
                                         isLoadingMore = isLoadingMore,
+                                        resetListView = currentState.resetListView,
                                     )
                                 } else {
                                     EmptyState(message = stringResource(R.string.no_results))
