@@ -8,13 +8,13 @@ import javax.inject.Inject
 class VideoMapper @Inject constructor() {
 
     fun map(video: Video): VideoUi {
-        val videoFiles = video.videoFiles.associate {
+        val videoFiles = video.videoFiles.filter { it.link != null }.associate {
             when (it.quality) {
-                "sd", "small" -> VideoQuality.SMALL to it.link
-                "hd", "medium" -> VideoQuality.MEDIUM to it.link
-                "uhd", "large" -> VideoQuality.LARGE to it.link
-                "hls" -> VideoQuality.HLS to it.link
-                else -> VideoQuality.SMALL to it.link
+                "sd", "small" -> VideoQuality.SMALL to it.link.orEmpty()
+                "hd", "medium" -> VideoQuality.MEDIUM to it.link.orEmpty()
+                "uhd", "large" -> VideoQuality.LARGE to it.link.orEmpty()
+                "hls" -> VideoQuality.HLS to it.link.orEmpty()
+                else -> VideoQuality.SMALL to it.link.orEmpty()
             }
         }
         return VideoUi(

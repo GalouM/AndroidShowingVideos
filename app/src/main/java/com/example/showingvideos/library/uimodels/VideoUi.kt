@@ -10,7 +10,7 @@ data class VideoUi(
     val height: Height,
     val width: Width,
     val duration: Duration,
-    val image: String,
+    val image: String?,
     val videoFiles: Map<VideoQuality, String>,
     val shouldPlay: Boolean = false
 )

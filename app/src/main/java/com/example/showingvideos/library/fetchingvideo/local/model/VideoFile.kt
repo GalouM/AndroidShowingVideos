@@ -5,6 +5,6 @@ data class VideoFile(
     val height: Height,
     val width: Width,
     val id: Id,
-    val link: String,
+    val link: String?,
     val quality: String
 )

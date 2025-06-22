@@ -8,14 +8,10 @@ import com.example.showingvideos.library.uimodels.mapper.VideoMapper
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import retrofit2.HttpException
-import java.util.concurrent.atomic.AtomicInteger
+import java.net.UnknownHostException
 import javax.inject.Inject
 
 internal class FetchVideoListUseCase @Inject constructor(
@@ -63,9 +59,9 @@ internal class FetchVideoListUseCase @Inject constructor(
                 val resetResults = page == STARTING_PAGE
                 val pageAlreadyFetched = checkIfPageAlreadyFetched(result.videos)
                 lastVideoFetchedId = result.videos.lastOrNull()?.id
-                val originalVideos = result.videos.takeUnless { pageAlreadyFetched } ?: emptyList()
+                val newVideos = result.videos.takeUnless { pageAlreadyFetched } ?: emptyList()
                 if (resetResults && !pageAlreadyFetched) videos.clear()
-                videos += videoMapper.map(originalVideos)
+                videos += videoMapper.map(newVideos)
                 FetchVideoState.Success(
                     videos = videos,
                     canLoadMore = canLoadMore(result.videos, pageAlreadyFetched),
@@ -74,7 +70,7 @@ internal class FetchVideoListUseCase @Inject constructor(
             }
 
             is FetchVideoRepository.FetchVideoList.Error -> {
-                if (result.error is HttpException) {
+                if (result.error is HttpException || result.error is UnknownHostException) {
                     FetchVideoState.RetryableError(page == STARTING_PAGE)
                 } else {
                     FetchVideoState.Error(page == STARTING_PAGE)

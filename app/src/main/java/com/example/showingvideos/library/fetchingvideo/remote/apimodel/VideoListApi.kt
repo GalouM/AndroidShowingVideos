@@ -6,5 +6,5 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class VideoListApi(
     @Json(name = "videos")
-    val videos: List<VideoApi>
+    val videos: List<VideoApi>?
 )

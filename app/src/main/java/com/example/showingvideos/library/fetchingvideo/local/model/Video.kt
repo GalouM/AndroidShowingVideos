@@ -5,9 +5,9 @@ data class Video(
     val height: Height,
     val width: Width,
     val id: Id,
-    val image: String,
-    val url: String,
-    val user: User,
+    val image: String?,
+    val url: String?,
+    val user: User?,
     val videoFiles: List<VideoFile>,
     val videoPictures: List<VideoPicture>,
 )

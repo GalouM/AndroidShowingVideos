@@ -7,21 +7,21 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class VideoApi(
     @Json(name = "duration")
-    val duration: Int,
+    val duration: Int?,
     @Json(name = "height")
-    val height: Int,
+    val height: Int?,
     @Json(name = "id")
-    val id: Int,
+    val id: Int?,
     @Json(name = "image")
-    val image: String,
+    val image: String?,
     @Json(name = "url")
-    val url: String,
+    val url: String?,
     @Json(name = "user")
-    val user: UserApi,
+    val user: UserApi?,
     @Json(name = "video_files")
-    val videoFiles: List<VideoFileApi>,
+    val videoFiles: List<VideoFileApi>?,
     @Json(name = "video_pictures")
-    val videoPictures: List<VideoPictureApi>,
+    val videoPictures: List<VideoPictureApi>?,
     @Json(name = "width")
-    val width: Int
+    val width: Int?
 )

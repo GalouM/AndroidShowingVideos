@@ -52,7 +52,7 @@ internal fun VideoListScreen(
     }
 
     val reachedBottom: Boolean by remember {
-        derivedStateOf { lazyListState.reachedBottom(buffer = 3) }
+        derivedStateOf { lazyListState.reachedBottom() }
     }
 
     var soundState by remember { mutableStateOf(SoundState.UNMUTED) }
