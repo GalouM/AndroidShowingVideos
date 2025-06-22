@@ -3,6 +3,8 @@ package com.example.showingvideos.feature.videolist
 import com.example.showingvideos.library.fetchingvideo.FetchVideoRepository
 import com.example.showingvideos.library.fetchingvideo.local.model.Id
 import com.example.showingvideos.library.fetchingvideo.local.model.Video
+import com.example.showingvideos.library.uimodels.VideoUi
+import com.example.showingvideos.library.uimodels.mapper.VideoMapper
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -17,7 +19,8 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
 internal class FetchVideoListUseCase @Inject constructor(
-    private val repository: FetchVideoRepository
+    private val repository: FetchVideoRepository,
+    private val videoMapper: VideoMapper
 ) {
     private var lastRequest: FetchVideoRequest? = null
         set(value) {
@@ -57,8 +60,9 @@ internal class FetchVideoListUseCase @Inject constructor(
             is FetchVideoRepository.FetchVideoList.Success -> {
                 val pageAlreadyFetched = checkIfPageAlreadyFetched(result.videos)
                 lastVideoFetchedId = result.videos.lastOrNull()?.id
+                val originalVideos = result.videos.takeUnless { pageAlreadyFetched } ?: emptyList()
                 FetchVideoState.Success(
-                    videos = result.videos.takeUnless { pageAlreadyFetched } ?: emptyList(),
+                    videos = videoMapper.map(originalVideos),
                     canLoadMore = canLoadMore(result.videos, pageAlreadyFetched)
                 )
             }
@@ -90,7 +94,7 @@ internal class FetchVideoListUseCase @Inject constructor(
     }
 
     sealed interface FetchVideoState {
-        data class Success(val videos: List<Video>, val canLoadMore: Boolean) : FetchVideoState
+        data class Success(val videos: List<VideoUi>, val canLoadMore: Boolean) : FetchVideoState
         data class Error(val isFirstPage: Boolean) : FetchVideoState
         data class RetryableError(val isFirstPage: Boolean) : FetchVideoState
     }

@@ -2,7 +2,8 @@ package com.example.showingvideos.feature.videolist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.showingvideos.library.fetchingvideo.local.model.Video
+import com.example.showingvideos.library.uimodels.SoundState
+import com.example.showingvideos.library.uimodels.VideoUi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -23,7 +24,7 @@ internal class VideoListViewModel @Inject constructor(
     val isRefreshing: StateFlow<Boolean> = _isRefreshing
     val isLoadingMore: StateFlow<Boolean> = _isLoadingMore
 
-    private val videos: MutableList<Video> = mutableListOf()
+    private val videos: MutableList<VideoUi> = mutableListOf()
 
     val displayState: StateFlow<VideoListDisplayState> =
         fetchVideoListUseCase.state.map { state ->

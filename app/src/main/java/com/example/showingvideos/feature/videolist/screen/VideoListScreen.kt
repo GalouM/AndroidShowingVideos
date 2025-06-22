@@ -17,17 +17,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.showingvideos.library.fetchingvideo.local.model.Video
+import com.example.showingvideos.library.uicommon.fakeVideoUiList
 import com.example.showingvideos.library.uicommon.reachedBottom
+import com.example.showingvideos.library.uicommon.firstVisibleItem
+import com.example.showingvideos.library.uimodels.SoundState
+import com.example.showingvideos.library.uimodels.VideoUi
+import com.example.showingvideos.ui.theme.ShowingVideosTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun VideoListScreen(
-    videos: List<Video>,
+    videos: List<VideoUi>,
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
     isRefreshing: Boolean,
@@ -42,10 +49,16 @@ internal fun VideoListScreen(
         derivedStateOf { lazyListState.reachedBottom(buffer = 3) }
     }
 
+    var soundState by remember { mutableStateOf(SoundState.UNMUTED) }
+
     LaunchedEffect(reachedBottom) {
         if (reachedBottom) {
             onLoadMore()
         }
+    }
+
+    val centeredItemIndex by remember {
+        derivedStateOf { lazyListState.firstVisibleItem() }
     }
 
     PullToRefreshBox(
@@ -63,8 +76,19 @@ internal fun VideoListScreen(
             itemsIndexed(
                 items = videos,
                 key = { _, video -> video.id.value }
-            ) { _, video ->
-                VideoItemView(video, modifier)
+            ) { index, video ->
+                VideoItemView(
+                    video = video,
+                    shouldPlay = index == centeredItemIndex,
+                    soundState = soundState,
+                    onMuteClicked = { currentSoundState ->
+                        soundState = when (currentSoundState) {
+                            SoundState.MUTED -> SoundState.UNMUTED
+                            SoundState.UNMUTED -> SoundState.MUTED
+                        }
+
+                    }
+                )
             }
 
             if (isLoadingMore) {
@@ -80,5 +104,19 @@ internal fun VideoListScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun VideoListScreenPreviewWithFakeData() {
+    ShowingVideosTheme {
+        VideoListScreen(
+            videos = fakeVideoUiList,
+            onRefresh = {},
+            onLoadMore = {},
+            isRefreshing = false,
+            isLoadingMore = false
+        )
     }
 }
