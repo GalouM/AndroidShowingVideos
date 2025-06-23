@@ -27,6 +27,7 @@ import com.example.showingvideos.library.uicommon.LoadingScreen
 import com.example.showingvideos.feature.videolist.screen.PixelDisclaimer
 import com.example.showingvideos.feature.videolist.screen.SearchBar
 import com.example.showingvideos.feature.videolist.screen.VideoListScreen
+import com.example.showingvideos.library.uicommon.SnackbarState
 import com.example.showingvideos.ui.theme.ShowingVideosTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -46,6 +47,17 @@ class MainActivity : ComponentActivity() {
             val state by viewModel.displayState.collectAsStateWithLifecycle()
             val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
             val isLoadingMore by viewModel.isLoadingMore.collectAsStateWithLifecycle()
+            val snackbarState by viewModel.snackbarState.collectAsStateWithLifecycle()
+
+            when (snackbarState) {
+                is SnackbarState.Error -> {
+                    ErrorSnackBar(
+                        message = stringResource(R.string.default_error_message),
+                        snackbarHostState = snackbarHostState
+                    )
+                }
+                else -> {}
+            }
 
             ShowingVideosTheme {
                 Scaffold(
@@ -75,7 +87,7 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                             VideoListDisplayState.Loading -> LoadingScreen()
-                            is VideoListDisplayState.Success -> {
+                            is VideoListDisplayState.ShowList -> {
                                 if (currentState.videos.isNotEmpty()) {
                                     VideoListScreen(
                                         videos = currentState.videos,
@@ -89,11 +101,6 @@ class MainActivity : ComponentActivity() {
                                     EmptyState(message = stringResource(R.string.no_results))
                                 }
                             }
-                            is VideoListDisplayState.NextPageFailed ->
-                                ErrorSnackBar(
-                                    message = stringResource(R.string.default_error_message),
-                                    snackbarHostState = snackbarHostState
-                                )
 
                             VideoListDisplayState.Empty -> EmptyState()
                         }

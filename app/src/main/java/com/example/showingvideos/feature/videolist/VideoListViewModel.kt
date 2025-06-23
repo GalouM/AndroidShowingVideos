@@ -2,6 +2,8 @@ package com.example.showingvideos.feature.videolist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.showingvideos.library.uicommon.SnackbarState
+import com.example.showingvideos.library.uimodels.VideoUi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,9 +20,13 @@ internal class VideoListViewModel @Inject constructor(
     private var canLoadMore: Boolean = true
     private val _isRefreshing = MutableStateFlow(false)
     private val _isLoadingMore = MutableStateFlow(false)
+    private val snackbarMessage = MutableStateFlow<SnackbarState?>(null)
+
+    private val videos: MutableList<VideoUi> = mutableListOf()
 
     val isRefreshing: StateFlow<Boolean> = _isRefreshing
     val isLoadingMore: StateFlow<Boolean> = _isLoadingMore
+    val snackbarState: StateFlow<SnackbarState?> = snackbarMessage
 
     val displayState: StateFlow<VideoListDisplayState> =
         fetchVideoListUseCase.state.map { state ->
@@ -28,25 +34,23 @@ internal class VideoListViewModel @Inject constructor(
             _isLoadingMore.value = false
             when (state) {
                 is FetchVideoListUseCase.FetchVideoState.Success -> {
+                    if (state.resultReset) videos.clear()
                     canLoadMore = state.canLoadMore
-                    VideoListDisplayState.Success(
-                        videos = state.videos,
+                    videos += state.videos
+                    VideoListDisplayState.ShowList(
+                        videos = videos,
                         resetListView = state.resultReset
                     )
                 }
-                is FetchVideoListUseCase.FetchVideoState.Error -> {
-                    if (state.isFirstPage) {
-                        VideoListDisplayState.Error(isRetryable = false)
-                    } else {
-                        VideoListDisplayState.NextPageFailed
-                    }
+                is FetchVideoListUseCase.FetchVideoState.FirstPageError -> {
+                    VideoListDisplayState.Error(isRetryable = state.isRetryableError)
                 }
-                is FetchVideoListUseCase.FetchVideoState.RetryableError -> {
-                    if (state.isFirstPage) {
-                        VideoListDisplayState.Error(isRetryable = true)
-                    } else {
-                        VideoListDisplayState.NextPageFailed
-                    }
+                is FetchVideoListUseCase.FetchVideoState.NextPageError -> {
+                    snackbarMessage.value = SnackbarState.Error()
+                    VideoListDisplayState.ShowList(
+                        videos = videos,
+                        resetListView = false
+                    )
                 }
             }
         }.stateIn(

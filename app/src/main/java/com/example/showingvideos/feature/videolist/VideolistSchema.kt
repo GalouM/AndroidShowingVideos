@@ -4,9 +4,8 @@ import com.example.showingvideos.library.uimodels.VideoUi
 
 sealed interface VideoListDisplayState {
     data object Loading : VideoListDisplayState
-    data class Success(val videos: List<VideoUi>, val resetListView: Boolean) : VideoListDisplayState
+    data class ShowList(val videos: List<VideoUi>, val resetListView: Boolean) : VideoListDisplayState
     data class Error(val isRetryable: Boolean, val errorMessage: String? = null) : VideoListDisplayState
-    data object NextPageFailed : VideoListDisplayState
     data object Empty : VideoListDisplayState
 }
 
