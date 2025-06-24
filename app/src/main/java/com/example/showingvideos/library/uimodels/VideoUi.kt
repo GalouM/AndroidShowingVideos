@@ -13,7 +13,24 @@ data class VideoUi(
     val image: String?,
     val videoFiles: Map<VideoQuality, String>,
     val shouldPlay: Boolean = false
-)
+) {
+
+    fun getVideoUrlLowestQuality(): String? {
+        return videoFiles[VideoQuality.SMALL] ?:
+        videoFiles[VideoQuality.MEDIUM] ?:
+        videoFiles[VideoQuality.LARGE]
+    }
+
+    fun getVideoUrlHighestQuality(): String? {
+        return videoFiles[VideoQuality.LARGE] ?:
+        videoFiles[VideoQuality.MEDIUM] ?:
+        videoFiles[VideoQuality.SMALL]
+    }
+
+    fun getVideoHlsUrl(): String? {
+        return videoFiles[VideoQuality.HLS]
+    }
+}
 
 enum class VideoQuality {
     SMALL, MEDIUM, LARGE, HLS

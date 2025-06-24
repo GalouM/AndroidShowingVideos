@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -23,10 +26,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.media3.common.MediaItem
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerView
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.showingvideos.R
+import com.example.showingvideos.library.uicommon.VideoPlayer
 import com.example.showingvideos.library.uicommon.sampleTallVideo
 import com.example.showingvideos.library.uicommon.sampleVideoZeroHeight
 import com.example.showingvideos.library.uimodels.SoundState
@@ -43,6 +51,7 @@ internal fun VideoItemView(
     maxHeight: Dp = VIDEO_MAX_HEIGHT.dp
 ) {
     val aspectRatio = video.width.value.toFloat() / video.height.value.toFloat()
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -52,29 +61,22 @@ internal fun VideoItemView(
     ) {
         val imageUrl = video.image
 
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(imageUrl)
-                .crossfade(true)
-                .build(),
-            contentDescription = stringResource(R.string.video_image_placeholder_description),
-            contentScale = ContentScale.Crop,
-            modifier = modifier.matchParentSize()
-        )
-
         if (shouldPlay) {
-            Icon(
-                painter = when (soundState) {
-                    SoundState.MUTED -> painterResource(R.drawable.mute_icon)
-                    SoundState.UNMUTED -> painterResource(R.drawable.speaker_icon)
-                },
-                contentDescription = stringResource(R.string.speaker_icon_description),
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(8.dp)
-                    .size(24.dp)
-                    .clickable { onMuteClicked(soundState) },
-                tint = MaterialTheme.colorScheme.onSurface,
+            VideoPlayer(
+                video = video,
+                soundState = soundState,
+                onMuteClicked = onMuteClicked,
+                modifier = Modifier.matchParentSize()
+            )
+        } else {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(imageUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = stringResource(R.string.video_image_placeholder_description),
+                contentScale = ContentScale.Crop,
+                modifier = modifier.matchParentSize()
             )
         }
     }

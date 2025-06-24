@@ -5,7 +5,8 @@
     <string name="pexel_disclaimer">Powered by the good people at %s</string>
     <string translatable="false" name="pexel_website">Pexels.com</string>
     <string name="video_image_placeholder_description">Image placehoder</string>
-    <string name="speaker_icon_description">Mute/Unmute video</string>
+    <string name="speaker_icon_mute_description">Mute video</string>
+    <string name="speaker_icon_unmute_description">Unmute video</string>
     <string name="default_error_message">Something went wrong</string>"
     <string name="retry_button_text">Retry</string>
     <string name="empty_screen">Search videos to see them here! Enter a keyword to begin and press search.</string>
