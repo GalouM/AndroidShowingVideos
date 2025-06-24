@@ -4,7 +4,7 @@
 
 A technical demonstration app exploring advanced video playback optimization techniques using ExoPlayer and Pexels API. Built to showcase Android development skills and experiment with efficient video handling strategies.
 
-<img src="./screenshots/start_screen.png.jpg" width="30%" height="30%">&ensp;<img src="./screenshots/video_list.png" width="30%" height="30%">
+<img src="./screenshots/start_screen.png" width="30%" height="30%">&ensp;<img src="./screenshots/video_list.png" width="30%" height="30%">
 
 ## 🎯 Project Goal
 
