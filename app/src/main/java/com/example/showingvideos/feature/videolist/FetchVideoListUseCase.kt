@@ -9,6 +9,7 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import retrofit2.HttpException
 import java.net.UnknownHostException
@@ -18,6 +19,12 @@ internal class FetchVideoListUseCase @Inject constructor(
     private val repository: FetchVideoRepository,
     private val videoMapper: VideoMapper
 ) {
+
+    private val defaultState = FetchVideoState.Success(
+        videos = emptyList(),
+        canLoadMore = false,
+        resultReset = false
+    )
 
     private var lastRequest: FetchVideoRequest? = null
         set(value) {
@@ -50,13 +57,13 @@ internal class FetchVideoListUseCase @Inject constructor(
 
     val state: Flow<FetchVideoState> = requestChannel.receiveAsFlow().map {
         fetchVideoList(it.page, it.query)
-    }
+    }.onStart { emit(defaultState) }
 
     private suspend fun fetchVideoList(page: Int, query: String): FetchVideoState =
         when (val result = repository.getVideoList(query, PAGE_SIZE, page)) {
             is FetchVideoRepository.FetchVideoList.Success -> {
                 val resetResults = page == STARTING_PAGE
-                val pageAlreadyFetched = checkIfPageAlreadyFetched(result.videos)
+                val pageAlreadyFetched = checkIfPageAlreadyFetched(result.videos, resetResults)
                 lastVideoFetchedId = result.videos.lastOrNull()?.id
                 val newVideos = result.videos.takeUnless { pageAlreadyFetched } ?: emptyList()
                 FetchVideoState.Success(
@@ -84,8 +91,8 @@ internal class FetchVideoListUseCase @Inject constructor(
         return videos.size == PAGE_SIZE || !pageAlreadyFetched
     }
 
-    private fun checkIfPageAlreadyFetched(videos: List<Video>): Boolean {
-        return videos.isNotEmpty() && videos.map { it.id }.contains(lastVideoFetchedId)
+    private fun checkIfPageAlreadyFetched(videos: List<Video>, resultReset: Boolean): Boolean {
+        return !resultReset && videos.isNotEmpty() && videos.map { it.id }.contains(lastVideoFetchedId)
     }
 
     companion object {

@@ -19,10 +19,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import com.example.showingvideos.R
+import com.example.showingvideos.feature.videolist.PlayingQuality
 import com.example.showingvideos.library.uimodels.SoundState
 import com.example.showingvideos.library.uimodels.VideoUi
 
@@ -32,17 +34,17 @@ fun VideoPlayer(
     video: VideoUi,
     soundState: SoundState,
     onMuteClicked: (soundSate: SoundState) -> Unit,
+    playingQuality: PlayingQuality,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    val exoPlayer = remember {
-        ExoPlayer.Builder(context).build().apply {
-            playWhenReady = true
-        }
+    val exoPlayer = rememberExoPlayer()
+    val videoUrl = when (playingQuality) {
+        PlayingQuality.Highest -> video.getVideoUrlHighestQuality()
+        PlayingQuality.Lowest -> video.getVideoUrlLowestQuality()
+        PlayingQuality.HLS -> video.getVideoHlsUrl()
     }
-    val highestVideoUrl = video.getVideoUrlHighestQuality()
-    val mediaSource = remember(highestVideoUrl) {
-        MediaItem.fromUri(highestVideoUrl.orEmpty())
+    val mediaSource = remember(videoUrl) {
+        MediaItem.fromUri(videoUrl.orEmpty())
     }
 
     LaunchedEffect(mediaSource) {
@@ -92,5 +94,16 @@ fun VideoPlayer(
                 .clickable { onMuteClicked(soundState) },
             tint = MaterialTheme.colorScheme.onSurface,
         )
+    }
+}
+
+@Composable
+fun rememberExoPlayer(): ExoPlayer {
+    val context = LocalContext.current
+    return remember {
+        ExoPlayer.Builder(context).build().apply {
+            playWhenReady = true
+            repeatMode = Player.REPEAT_MODE_ONE
+        }
     }
 }

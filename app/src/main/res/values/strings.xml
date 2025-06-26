@@ -11,5 +11,7 @@
     <string name="retry_button_text">Retry</string>
     <string name="empty_screen">Search videos to see them here! Enter a keyword to begin and press search.</string>
     <string name="no_results">No results available</string>
+    <string name="settings_button">Settings</string>
+    <string name="select_playing_quality">Select Playing Quality:</string>
 
 </resources>

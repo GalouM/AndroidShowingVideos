@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.showingvideos.feature.videolist.PlayingQuality
 import com.example.showingvideos.library.uicommon.fakeVideoUiList
 import com.example.showingvideos.library.uicommon.firstVisibleItem
 import com.example.showingvideos.library.uicommon.reachedBottom
@@ -39,6 +40,7 @@ internal fun VideoListScreen(
     isRefreshing: Boolean,
     isLoadingMore: Boolean,
     resetListView: Boolean,
+    playingQuality: PlayingQuality,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
@@ -95,7 +97,8 @@ internal fun VideoListScreen(
                                 SoundState.MUTED -> SoundState.UNMUTED
                                 SoundState.UNMUTED -> SoundState.MUTED
                             }
-                        }
+                        },
+                        playingQuality = playingQuality,
                     )
                 }
             }
@@ -127,6 +130,7 @@ private fun VideoListScreenPreviewWithFakeData() {
             isRefreshing = false,
             isLoadingMore = false,
             resetListView = false,
+            playingQuality = PlayingQuality.Lowest,
         )
     }
 }
