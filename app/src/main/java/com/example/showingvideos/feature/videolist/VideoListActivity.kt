@@ -74,7 +74,7 @@ class VideoListActivity : ComponentActivity() {
 
             var openBottomSheet by rememberSaveable { mutableStateOf(false) }
             val bottomSheetState = rememberModalBottomSheetState(
-                skipPartiallyExpanded = true // Ensures the sheet is either fully open or hidden
+                skipPartiallyExpanded = true
             )
 
             ShowingVideosTheme {
