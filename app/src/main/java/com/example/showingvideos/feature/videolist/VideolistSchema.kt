@@ -9,6 +9,8 @@ sealed interface VideoListDisplayState {
         val videos: List<VideoUi>,
         val resetListView: Boolean,
         override val playingQuality: PlayingQuality,
+        val isRefreshing: Boolean,
+        val isLoadingMore: Boolean,
     ) : VideoListDisplayState
     data class Error(
         val isRetryable: Boolean,

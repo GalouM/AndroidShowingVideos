@@ -58,8 +58,6 @@ class VideoListActivity : ComponentActivity() {
             val scope = rememberCoroutineScope()
 
             val state by viewModel.displayState.collectAsStateWithLifecycle()
-            val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
-            val isLoadingMore by viewModel.isLoadingMore.collectAsStateWithLifecycle()
             val snackbarState by viewModel.snackbarState.collectAsStateWithLifecycle()
 
             when (snackbarState) {
@@ -116,8 +114,8 @@ class VideoListActivity : ComponentActivity() {
                                         videos = currentState.videos,
                                         onRefresh = { viewModel.onEvent(VideoListEvent.Refresh) },
                                         onLoadMore = { viewModel.onEvent(VideoListEvent.LoadNextPage) },
-                                        isRefreshing = isRefreshing,
-                                        isLoadingMore = isLoadingMore,
+                                        isRefreshing = currentState.isRefreshing,
+                                        isLoadingMore = currentState.isLoadingMore,
                                         resetListView = currentState.resetListView,
                                         playingQuality = currentState.playingQuality,
                                     )

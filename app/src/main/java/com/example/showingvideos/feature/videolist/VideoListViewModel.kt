@@ -19,20 +19,16 @@ internal class VideoListViewModel @Inject constructor(
 ) : ViewModel() {
 
     private var canLoadMore: Boolean = true
-    private val _isRefreshing = MutableStateFlow(false)
-    private val _isLoadingMore = MutableStateFlow(false)
+
     private val _snackbarMessage = MutableStateFlow<SnackbarState?>(null)
 
     private val videos: MutableList<VideoUi> = mutableListOf()
-
-    val isRefreshing: StateFlow<Boolean> = _isRefreshing
-    val isLoadingMore: StateFlow<Boolean> = _isLoadingMore
     val snackbarState: StateFlow<SnackbarState?> = _snackbarMessage
 
     val displayState: StateFlow<VideoListDisplayState> =
-        combine(fetchVideoListUseCase.state, setPlayerSettingsUseCase.state) { videosState, playerState ->
-            _isRefreshing.value = false
-            _isLoadingMore.value = false
+        combine(fetchVideoListUseCase.state,
+            setPlayerSettingsUseCase.state,
+        ) { videosState, playerState->
             when (videosState) {
                 is FetchVideoListUseCase.FetchVideoState.Success -> {
                     if (videosState.resultReset) videos.clear()
@@ -42,6 +38,8 @@ internal class VideoListViewModel @Inject constructor(
                         videos = videos,
                         resetListView = videosState.resultReset,
                         playingQuality = playerState.playingQuality,
+                        isRefreshing = false,
+                        isLoadingMore = false
                     )
                 }
                 is FetchVideoListUseCase.FetchVideoState.FirstPageError -> {
@@ -56,8 +54,37 @@ internal class VideoListViewModel @Inject constructor(
                         videos = videos,
                         resetListView = false,
                         playingQuality = playerState.playingQuality,
+                        isRefreshing = false,
+                        isLoadingMore = false
+
                     )
                 }
+
+                FetchVideoListUseCase.FetchVideoState.FirstLoading ->
+                    VideoListDisplayState.Loading(playerState.playingQuality)
+
+                FetchVideoListUseCase.FetchVideoState.LoadingMore ->
+                    VideoListDisplayState.ShowList(
+                        videos = videos,
+                        resetListView = false,
+                        playingQuality = playerState.playingQuality,
+                        isRefreshing = false,
+                        isLoadingMore = true
+
+                    )
+
+                FetchVideoListUseCase.FetchVideoState.Refreshing ->
+                    VideoListDisplayState.ShowList(
+                        videos = videos,
+                        resetListView = false,
+                        playingQuality = playerState.playingQuality,
+                        isRefreshing = true,
+                        isLoadingMore = false
+
+                    )
+
+                FetchVideoListUseCase.FetchVideoState.Initialized ->
+                    VideoListDisplayState.Empty(playingQuality = playerState.playingQuality)
             }
         }.stateIn(
             scope = viewModelScope,
@@ -69,14 +96,10 @@ internal class VideoListViewModel @Inject constructor(
         when (event) {
             is VideoListEvent.SetQuery -> fetchVideoListUseCase.setQuery(event.query)
             VideoListEvent.Refresh -> {
-                if (!_isRefreshing.value) {
-                    _isRefreshing.value = true
-                    fetchVideoListUseCase.refresh()
-                }
+                fetchVideoListUseCase.refresh()
             }
             VideoListEvent.LoadNextPage -> {
-                if (canLoadMore && !_isLoadingMore.value) {
-                    _isLoadingMore.value = true
+                if (canLoadMore) {
                     fetchVideoListUseCase.loadNextPage()
                 }
             }

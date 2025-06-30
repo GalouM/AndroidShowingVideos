@@ -5,10 +5,12 @@ import com.example.showingvideos.library.fetchingvideo.local.model.Id
 import com.example.showingvideos.library.fetchingvideo.local.model.Video
 import com.example.showingvideos.library.uimodels.VideoUi
 import com.example.showingvideos.library.uimodels.mapper.VideoMapper
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import retrofit2.HttpException
@@ -20,11 +22,7 @@ internal class FetchVideoListUseCase @Inject constructor(
     private val videoMapper: VideoMapper
 ) {
 
-    private val defaultState = FetchVideoState.Success(
-        videos = emptyList(),
-        canLoadMore = false,
-        resultReset = false
-    )
+    private val defaultState = FetchVideoState.Initialized
 
     private var lastRequest: FetchVideoRequest? = null
         set(value) {
@@ -42,40 +40,60 @@ internal class FetchVideoListUseCase @Inject constructor(
     private var lastVideoFetchedId: Id? = null
 
     fun refresh() {
-        lastRequest = lastRequest?.copy(page = STARTING_PAGE)
+        lastRequest = lastRequest?.copy(
+            page = STARTING_PAGE,
+            type = RequestType.REFRESH
+        )
     }
 
     fun loadNextPage() {
         lastRequest?.let { previousState ->
-            lastRequest = previousState.copy(page = previousState.page + 1)
+            lastRequest = previousState.copy(
+                page = previousState.page + 1,
+                type = RequestType.NEXT_PAGE
+            )
         }
     }
 
     fun setQuery(query: String) {
-        lastRequest = FetchVideoRequest(query)
+        lastRequest = FetchVideoRequest(
+            query = query,
+            type = RequestType.FIRST_PAGE
+        )
     }
 
-    val state: Flow<FetchVideoState> = requestChannel.receiveAsFlow().map {
-        fetchVideoList(it.page, it.query)
-    }.onStart { emit(defaultState) }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val state: Flow<FetchVideoState> = requestChannel.receiveAsFlow()
+        .flatMapLatest { request ->
+            flow {
+                val loadingState = when (request.type) {
+                    RequestType.FIRST_PAGE -> FetchVideoState.FirstLoading
+                    RequestType.NEXT_PAGE -> FetchVideoState.LoadingMore
+                    RequestType.REFRESH -> FetchVideoState.Refreshing
+                }
+                emit(loadingState)
 
-    private suspend fun fetchVideoList(page: Int, query: String): FetchVideoState =
-        when (val result = repository.getVideoList(query, PAGE_SIZE, page)) {
+                emit(fetchVideoList(request))
+            }
+        }
+        .onStart { emit(defaultState) }
+
+    private suspend fun fetchVideoList(request: FetchVideoRequest): FetchVideoState =
+        when (val result = repository.getVideoList(request.query, PAGE_SIZE, request.page)) {
             is FetchVideoRepository.FetchVideoList.Success -> {
-                val resetResults = page == STARTING_PAGE
-                val pageAlreadyFetched = checkIfPageAlreadyFetched(result.videos, resetResults)
+                val pageAlreadyFetched = checkIfPageAlreadyFetched(result.videos, request.resetResults)
                 lastVideoFetchedId = result.videos.lastOrNull()?.id
                 val newVideos = result.videos.takeUnless { pageAlreadyFetched } ?: emptyList()
                 FetchVideoState.Success(
                     videos = videoMapper.map(newVideos),
                     canLoadMore = canLoadMore(result.videos, pageAlreadyFetched),
-                    resultReset = resetResults
+                    resultReset = request.resetResults
                 )
             }
 
             is FetchVideoRepository.FetchVideoList.Error -> {
                 val isRetryable = result.error is HttpException || result.error is UnknownHostException
-                if (page == STARTING_PAGE) {
+                if (request.type == RequestType.FIRST_PAGE) {
                     FetchVideoState.FirstPageError(isRetryable)
                 } else {
                     FetchVideoState.NextPageError(isRetryable)
@@ -108,10 +126,23 @@ internal class FetchVideoListUseCase @Inject constructor(
         ) : FetchVideoState
         data class FirstPageError(val isRetryableError: Boolean) : FetchVideoState
         data class NextPageError(val isRetryableError: Boolean) : FetchVideoState
+        data object FirstLoading : FetchVideoState
+        data object Refreshing : FetchVideoState
+        data object LoadingMore : FetchVideoState
+        data object Initialized : FetchVideoState
     }
 
     data class FetchVideoRequest(
         val query: String,
-        val page: Int = STARTING_PAGE
-    )
+        val page: Int = STARTING_PAGE,
+        val type: RequestType = RequestType.FIRST_PAGE
+    ) {
+        val resetResults: Boolean get() =
+            type == RequestType.REFRESH || type == RequestType.FIRST_PAGE
+    }
+    enum class RequestType {
+        FIRST_PAGE,
+        NEXT_PAGE,
+        REFRESH
+    }
 }
